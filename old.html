@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marvel Watchlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow+Condensed:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-900:#0d0d11;
+    --ink-800:#17181f;
+    --ink-700:#212230;
+    --ink-600:#2c2d3d;
+    --line:#34354a;
+    --text:#f1efe6;
+    --text-dim:#9a99a8;
+    --marvel-red:#ed1d24;
+    --marvel-red-dim:#7a1013;
+    --gold:#f5b700;
+    --watched:#2fb170;
+    --skip:#ed1d24;
+    --u-mcu:#ed1d24;
+    --u-xmen:#f5b700;
+    --u-spider:#3d8bff;
+    --u-netflix:#9a99a8;
+    --u-anim:#2fb1a3;
+    --u-other:#a06bff;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink-900);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0);
+    background-size:16px 16px;
+    color:var(--text);
+    font-family:'Barlow Condensed', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:760px;margin:0 auto;padding:0 0 60px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:sticky; top:0; z-index:20;
+    background:
+      radial-gradient(circle at 15px 15px, rgba(237,29,36,0.16) 2.5px, transparent 2.6px) 0 0/24px 24px,
+      linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 100%);
+    border-bottom:3px solid var(--ink-600);
+    padding:18px 18px 14px;
+  }
+  .hero-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .title-block h1{
+    font-family:'Bangers', cursive;
+    font-size:clamp(30px,7vw,42px);
+    letter-spacing:1px;
+    color:var(--text);
+    text-shadow: 3px 3px 0 var(--marvel-red-dim), -1px -1px 0 rgba(255,255,255,0.05);
+    margin:0;
+    line-height:0.9;
+    transform:rotate(-1.5deg);
+  }
+  .title-block p{
+    margin:6px 2px 0;
+    font-size:15px;
+    color:var(--text-dim);
+    font-weight:500;
+    letter-spacing:0.2px;
+    max-width:420px;
+  }
+
+  .badge{
+    flex:0 0 auto;
+    background:var(--ink-700);
+    border:2px solid var(--ink-600);
+    border-radius:10px;
+    box-shadow:5px 5px 0 rgba(0,0,0,0.55);
+    padding:8px 16px 10px;
+    text-align:center;
+    transform:rotate(2.5deg);
+    min-width:118px;
+  }
+  .badge .num{
+    font-family:'Bangers', cursive;
+    font-size:34px;
+    color:var(--gold);
+    line-height:1;
+    display:block;
+  }
+  .badge .num small{font-size:16px; font-family:'Barlow Condensed'; color:var(--gold);}
+  .badge .lbl{
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--text-dim);
+    display:block;
+    margin-top:2px;
+  }
+  .badge .scope{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color:var(--text-dim);
+    margin-top:4px;
+    display:block;
+  }
+
+  .progress-row{
+    display:flex; align-items:center; gap:10px;
+    margin-top:14px;
+  }
+  .progress-track{
+    flex:1;
+    height:8px;
+    background:var(--ink-700);
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--ink-600);
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--watched), #58d99a);
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-text{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+
+  /* ---------- FILTERS ---------- */
+  .filters{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top:14px;
+  }
+  .pill{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    background:transparent;
+    color:var(--text-dim);
+    border:2px solid var(--ink-600);
+    border-radius:20px;
+    padding:6px 14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .pill:hover{border-color:var(--marvel-red); color:var(--text);}
+  .pill.active{
+    background:var(--marvel-red);
+    border-color:var(--marvel-red);
+    color:#fff;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.5);
+  }
+  .reset-link{
+    margin-left:auto;
+    background:none; border:none;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px 4px;
+  }
+  .reset-link:hover{color:var(--marvel-red);}
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:10px 14px;
+    margin-top:12px;
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color:var(--text-dim);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+  /* ---------- LIST ---------- */
+  .list{padding:16px 14px 0;}
+  .year-divider{
+    display:flex; align-items:center; gap:10px;
+    margin:22px 2px 10px;
+    color:var(--text-dim);
+  }
+  .year-divider:first-child{margin-top:6px;}
+  .year-divider .y{
+    font-family:'Bangers', cursive;
+    font-size:20px;
+    color:var(--gold);
+    letter-spacing:1px;
+  }
+  .year-divider .r{flex:1; height:2px; background:var(--ink-600);}
+
+  .item-block{margin-bottom:10px;}
+  .card{
+    display:flex; align-items:stretch; gap:0;
+    background:var(--ink-800);
+    border:2px solid var(--ink-700);
+    border-radius:10px;
+    overflow:hidden;
+    transition:transform .12s ease, border-color .12s ease, opacity .2s ease;
+  }
+  .card:hover{transform:translateY(-1px); border-color:var(--ink-600);}
+  .card.done{opacity:0.42;}
+  .card.expanded{border-bottom-left-radius:0; border-bottom-right-radius:0;}
+  .card .stripe{width:5px; flex:0 0 5px;}
+
+  .card-body{
+    flex:1; min-width:0;
+    padding:11px 12px;
+    display:flex; flex-direction:column; gap:4px;
+    justify-content:center;
+  }
+  .card-title{
+    font-size:19px;
+    font-weight:700;
+    color:var(--text);
+    line-height:1.1;
+    letter-spacing:0.2px;
+  }
+  .card.done .card-title{color:var(--text-dim);}
+  .card-title-row{display:flex; align-items:center; gap:7px;}
+  .card.tv .card-title-row{cursor:pointer;}
+  .chevron{
+    font-size:11px;
+    color:var(--text-dim);
+    transition:transform .15s ease;
+    flex:0 0 auto;
+    display:inline-block;
+  }
+  .card.expanded .chevron{transform:rotate(180deg);}
+  .ep-progress{color:var(--gold);}
+  .card-meta{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    color:var(--text-dim);
+  }
+  .tag{
+    padding:1px 7px;
+    border-radius:4px;
+    font-size:10px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    font-weight:700;
+    color:#0d0d11;
+  }
+  .kind-icon{opacity:0.8;}
+
+  .card-actions{
+    flex:0 0 auto;
+    display:flex; flex-direction:column;
+    border-left:2px solid var(--ink-700);
+  }
+  .card-actions button{
+    -webkit-appearance:none; appearance:none;
+    width:52px; flex:1;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--ink-700);
+    color:var(--text-dim);
+    cursor:pointer;
+    font-size:18px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, color .12s ease;
+  }
+  .card-actions button:last-child{border-bottom:none;}
+  .card-actions button:hover{background:var(--ink-700); color:var(--text);}
+  .card-actions button.watch.active{background:var(--watched); color:#08150d;}
+  .card-actions button.skip.active{background:var(--skip); color:#1a0505;}
+
+  .upcoming-badge{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    width:110px;
+    border-left:2px dashed var(--ink-600);
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    text-align:center;
+    color:var(--gold);
+    padding:6px 8px;
+    line-height:1.4;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+
+  .episode-panel{
+    background:var(--ink-700);
+    border:2px solid var(--ink-700);
+    border-top:1px solid var(--ink-600);
+    border-radius:0 0 10px 10px;
+    padding:2px 0;
+    overflow:hidden;
+  }
+  .episode-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 14px 8px 23px;
+    border-bottom:1px solid var(--ink-600);
+    font-size:14.5px;
+    font-weight:600;
+  }
+  .episode-row:last-child{border-bottom:none;}
+  .episode-row.done{opacity:0.4;}
+  .ep-actions{display:flex; gap:6px;}
+  .ep-actions button{
+    -webkit-appearance:none; appearance:none;
+    width:30px; height:26px;
+    background:var(--ink-800);
+    border:1px solid var(--ink-600);
+    border-radius:6px;
+    color:var(--text-dim);
+    cursor:pointer;
+    font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, color .12s ease;
+  }
+  .ep-actions button:hover{background:var(--ink-600); color:var(--text);}
+  .ep-actions button.watch.active{background:var(--watched); color:#08150d; border-color:var(--watched);}
+  .ep-actions button.skip.active{background:var(--skip); color:#1a0505; border-color:var(--skip);}
+
+  .empty{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-dim);
+    font-size:16px;
+  }
+
+  footer{
+    text-align:center;
+    padding:26px 20px 10px;
+    color:var(--text-dim);
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    line-height:1.6;
+  }
+
+  @media (max-width:420px){
+    .card-title{font-size:17px;}
+    .badge{min-width:100px; padding:6px 12px 8px;}
+    .badge .num{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-top">
+      <div class="title-block">
+        <h1>MARVEL WATCHLIST</h1>
+        <p>Every Marvel film, TV series &amp; short — MCU and beyond — in release order.</p>
+      </div>
+      <div class="badge">
+        <span class="num" id="hoursNum">0<small>h</small></span>
+        <span class="lbl">Left to watch</span>
+        <span class="scope" id="hoursScope">all 151 titles</span>
+      </div>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">0 / 0 done</div>
+    </div>
+
+    <div class="filters">
+      <button class="pill active" data-filter="all">All</button>
+      <button class="pill" data-filter="unwatched">Unwatched</button>
+      <button class="pill" data-filter="film">Films</button>
+      <button class="pill" data-filter="tv">TV</button>
+      <button class="pill" data-filter="short">Shorts</button>
+      <button class="reset-link" id="resetBtn">clear progress</button>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot" style="background:var(--u-mcu)"></i>MCU</span>
+      <span><i class="dot" style="background:var(--u-xmen)"></i>X-Men</span>
+      <span><i class="dot" style="background:var(--u-spider)"></i>Spider-Verse</span>
+      <span><i class="dot" style="background:var(--u-netflix)"></i>Netflix</span>
+      <span><i class="dot" style="background:var(--u-anim)"></i>Classic Animated</span>
+      <span><i class="dot" style="background:var(--u-other)"></i>Other</span>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <footer>
+    Runtimes for TV series are estimated (episode count × average episode length).<br>
+    Dates for pre-2000 animated series are approximate. Data compiled August 2026.
+  </footer>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+/* k: F=Film, T=TV, S=Short  |  u: universe tag for color coding */
+const DATA = [
+// ---- FILMS ----
+{id:'f01',t:'Howard the Duck',k:'F',d:'1986-08-01',m:111,u:'OTHER'},
+{id:'f02',t:'The Punisher',k:'F',d:'1989-10-13',m:92,u:'OTHER'},
+{id:'f03',t:'Captain America',k:'F',d:'1990-12-14',m:97,u:'OTHER'},
+{id:'f04',t:'Blade',k:'F',d:'1998-08-21',m:120,u:'OTHER'},
+{id:'f05',t:'X-Men',k:'F',d:'2000-07-14',m:104,u:'XMEN'},
+{id:'f06',t:'Blade II',k:'F',d:'2002-03-22',m:117,u:'OTHER'},
+{id:'f07',t:'Spider-Man',k:'F',d:'2002-05-03',m:121,u:'SPIDER'},
+{id:'f08',t:'Daredevil',k:'F',d:'2003-02-14',m:103,u:'OTHER'},
+{id:'f09',t:'X2: X-Men United',k:'F',d:'2003-05-02',m:134,u:'XMEN'},
+{id:'f10',t:'Hulk',k:'F',d:'2003-06-20',m:138,u:'OTHER'},
+{id:'f11',t:'The Punisher',k:'F',d:'2004-04-16',m:124,u:'OTHER'},
+{id:'f12',t:'Spider-Man 2',k:'F',d:'2004-06-30',m:127,u:'SPIDER'},
+{id:'f13',t:'Elektra',k:'F',d:'2005-01-14',m:97,u:'OTHER'},
+{id:'f14',t:'Fantastic Four',k:'F',d:'2005-07-08',m:106,u:'OTHER'},
+{id:'f15',t:'X-Men: The Last Stand',k:'F',d:'2006-05-26',m:104,u:'XMEN'},
+{id:'f16',t:'Ghost Rider',k:'F',d:'2007-02-16',m:114,u:'OTHER'},
+{id:'f17',t:'Fantastic Four: Rise of the Silver Surfer',k:'F',d:'2007-06-15',m:92,u:'OTHER'},
+{id:'f18',t:'Spider-Man 3',k:'F',d:'2007-05-04',m:139,u:'SPIDER'},
+{id:'f19',t:'Punisher: War Zone',k:'F',d:'2008-12-05',m:107,u:'OTHER'},
+{id:'f20',t:'Iron Man',k:'F',d:'2008-05-02',m:126,u:'MCU'},
+{id:'f21',t:'The Incredible Hulk',k:'F',d:'2008-06-13',m:112,u:'MCU'},
+{id:'f22',t:'X-Men Origins: Wolverine',k:'F',d:'2009-05-01',m:107,u:'XMEN'},
+{id:'f23',t:'Iron Man 2',k:'F',d:'2010-05-07',m:124,u:'MCU'},
+{id:'f24',t:'Thor',k:'F',d:'2011-05-06',m:115,u:'MCU'},
+{id:'f25',t:'X-Men: First Class',k:'F',d:'2011-06-03',m:131,u:'XMEN'},
+{id:'f26',t:'Captain America: The First Avenger',k:'F',d:'2011-07-22',m:124,u:'MCU'},
+{id:'f27',t:'Ghost Rider: Spirit of Vengeance',k:'F',d:'2012-02-17',m:96,u:'OTHER'},
+{id:'f28',t:'The Amazing Spider-Man',k:'F',d:'2012-07-03',m:136,u:'SPIDER'},
+{id:'f29',t:'The Avengers',k:'F',d:'2012-05-04',m:143,u:'MCU'},
+{id:'f30',t:'The Wolverine',k:'F',d:'2013-07-26',m:126,u:'XMEN'},
+{id:'f31',t:'Iron Man 3',k:'F',d:'2013-05-03',m:130,u:'MCU'},
+{id:'f32',t:'Thor: The Dark World',k:'F',d:'2013-11-08',m:112,u:'MCU'},
+{id:'f33',t:'The Amazing Spider-Man 2',k:'F',d:'2014-05-02',m:142,u:'SPIDER'},
+{id:'f34',t:'X-Men: Days of Future Past',k:'F',d:'2014-05-23',m:132,u:'XMEN'},
+{id:'f35',t:'Captain America: The Winter Soldier',k:'F',d:'2014-04-04',m:136,u:'MCU'},
+{id:'f36',t:'Guardians of the Galaxy',k:'F',d:'2014-08-01',m:121,u:'MCU'},
+{id:'f37',t:'Avengers: Age of Ultron',k:'F',d:'2015-05-01',m:141,u:'MCU'},
+{id:'f38',t:'Fantastic Four',k:'F',d:'2015-08-07',m:100,u:'OTHER'},
+{id:'f39',t:'Ant-Man',k:'F',d:'2015-07-17',m:117,u:'MCU'},
+{id:'f40',t:'Deadpool',k:'F',d:'2016-02-12',m:108,u:'OTHER'},
+{id:'f41',t:'Captain America: Civil War',k:'F',d:'2016-05-06',m:147,u:'MCU'},
+{id:'f42',t:'X-Men: Apocalypse',k:'F',d:'2016-05-27',m:144,u:'XMEN'},
+{id:'f43',t:'Doctor Strange',k:'F',d:'2016-11-04',m:115,u:'MCU'},
+{id:'f44',t:'Logan',k:'F',d:'2017-03-03',m:137,u:'XMEN'},
+{id:'f45',t:'Guardians of the Galaxy Vol. 2',k:'F',d:'2017-05-05',m:136,u:'MCU'},
+{id:'f46',t:'Spider-Man: Homecoming',k:'F',d:'2017-07-07',m:133,u:'MCU'},
+{id:'f47',t:'Thor: Ragnarok',k:'F',d:'2017-11-03',m:130,u:'MCU'},
+{id:'f48',t:'Deadpool 2',k:'F',d:'2018-05-18',m:119,u:'OTHER'},
+{id:'f49',t:'Avengers: Infinity War',k:'F',d:'2018-04-27',m:149,u:'MCU'},
+{id:'f50',t:'Ant-Man and the Wasp',k:'F',d:'2018-07-06',m:118,u:'MCU'},
+{id:'f51',t:'Venom',k:'F',d:'2018-10-05',m:112,u:'SPIDER'},
+{id:'f52',t:'Captain Marvel',k:'F',d:'2019-03-08',m:124,u:'MCU'},
+{id:'f53',t:'Avengers: Endgame',k:'F',d:'2019-04-26',m:181,u:'MCU'},
+{id:'f54',t:'Dark Phoenix',k:'F',d:'2019-06-07',m:114,u:'XMEN'},
+{id:'f55',t:'Spider-Man: Far From Home',k:'F',d:'2019-07-02',m:129,u:'MCU'},
+{id:'f56',t:'The New Mutants',k:'F',d:'2020-08-28',m:94,u:'XMEN'},
+{id:'f57',t:'Black Widow',k:'F',d:'2021-07-09',m:134,u:'MCU'},
+{id:'f58',t:'Shang-Chi and the Legend of the Ten Rings',k:'F',d:'2021-09-03',m:132,u:'MCU'},
+{id:'f59',t:'Venom: Let There Be Carnage',k:'F',d:'2021-10-01',m:97,u:'SPIDER'},
+{id:'f60',t:'Eternals',k:'F',d:'2021-11-05',m:156,u:'MCU'},
+{id:'f61',t:'Spider-Man: No Way Home',k:'F',d:'2021-12-17',m:148,u:'MCU'},
+{id:'f62',t:'Morbius',k:'F',d:'2022-04-01',m:104,u:'SPIDER'},
+{id:'f63',t:'Doctor Strange in the Multiverse of Madness',k:'F',d:'2022-05-06',m:126,u:'MCU'},
+{id:'f64',t:'Thor: Love and Thunder',k:'F',d:'2022-07-08',m:119,u:'MCU'},
+{id:'f65',t:'Black Panther: Wakanda Forever',k:'F',d:'2022-11-11',m:161,u:'MCU'},
+{id:'f66',t:'Ant-Man and the Wasp: Quantumania',k:'F',d:'2023-02-17',m:125,u:'MCU'},
+{id:'f67',t:'Guardians of the Galaxy Vol. 3',k:'F',d:'2023-05-05',m:150,u:'MCU'},
+{id:'f68',t:'The Marvels',k:'F',d:'2023-11-10',m:105,u:'MCU'},
+{id:'f69',t:'Madame Web',k:'F',d:'2024-02-14',m:116,u:'SPIDER'},
+{id:'f70',t:'Deadpool & Wolverine',k:'F',d:'2024-07-26',m:128,u:'MCU'},
+{id:'f71',t:'Venom: The Last Dance',k:'F',d:'2024-10-25',m:109,u:'SPIDER'},
+{id:'f72',t:'Kraven the Hunter',k:'F',d:'2024-12-13',m:127,u:'SPIDER'},
+{id:'f73',t:'Captain America: Brave New World',k:'F',d:'2025-02-14',m:118,u:'MCU'},
+{id:'f74',t:'Thunderbolts*',k:'F',d:'2025-05-02',m:126,u:'MCU'},
+{id:'f75',t:'The Fantastic Four: First Steps',k:'F',d:'2025-07-25',m:115,u:'MCU'},
+{id:'f76',t:'Spider-Man: Brand New Day',k:'F',d:'2026-07-31',m:145,u:'MCU'},
+{id:'f77',t:'Avengers: Doomsday',k:'F',d:'2026-12-18',m:180,u:'MCU'},
+
+// ---- SHORTS (Marvel One-Shots) ----
+{id:'s01',t:'The Consultant',k:'S',d:'2011-09-13',m:4,u:'MCU'},
+{id:'s02',t:"A Funny Thing Happened on the Way to Thor's Hammer",k:'S',d:'2011-10-25',m:4,u:'MCU'},
+{id:'s03',t:'Item 47',k:'S',d:'2012-09-25',m:12,u:'MCU'},
+{id:'s04',t:'Agent Carter',k:'S',d:'2013-09-03',m:15,u:'MCU'},
+{id:'s05',t:'All Hail the King',k:'S',d:'2014-02-04',m:15,u:'MCU'},
+{id:'s06',t:'Team Thor',k:'S',d:'2016-08-28',m:4,u:'MCU'},
+{id:'s07',t:'Team Thor: Part 2',k:'S',d:'2017-03-10',m:5,u:'MCU'},
+{id:'s08',t:'Team Darryl',k:'S',d:'2017-08-11',m:6,u:'MCU'},
+{id:'s09',t:"Peter's To-Do List",k:'S',d:'2017-09-05',m:3,u:'MCU'},
+
+// ---- TV: classic / non-MCU animated ----
+{id:'t01',t:'The Marvel Super Heroes',k:'T',d:'1966-09-01',m:455,u:'ANIM',ep:'65 eps'},
+{id:'t02',t:'Spider-Man',k:'T',d:'1967-09-09',m:1144,u:'ANIM',ep:'52 eps'},
+{id:'t03',t:'Fantastic Four',k:'T',d:'1967-09-09',m:440,u:'ANIM',ep:'20 eps'},
+{id:'t04',t:'Spider-Man and His Amazing Friends',k:'T',d:'1981-09-12',m:528,u:'ANIM',ep:'24 eps'},
+{id:'t05',t:'X-Men: The Animated Series',k:'T',d:'1992-10-31',m:1672,u:'ANIM',ep:'76 eps'},
+{id:'t06',t:'Fantastic Four',k:'T',d:'1994-09-24',m:572,u:'ANIM',ep:'26 eps'},
+{id:'t07',t:'Spider-Man: The Animated Series',k:'T',d:'1994-11-19',m:1430,u:'ANIM',ep:'65 eps'},
+{id:'t08',t:'Silver Surfer',k:'T',d:'1998-02-07',m:286,u:'ANIM',ep:'13 eps'},
+{id:'t09',t:'The Avengers: United They Stand',k:'T',d:'1999-09-18',m:286,u:'ANIM',ep:'13 eps'},
+{id:'t10',t:'Spider-Man Unlimited',k:'T',d:'1999-10-25',m:286,u:'ANIM',ep:'13 eps'},
+{id:'t11',t:'X-Men: Evolution',k:'T',d:'2000-11-04',m:1144,u:'ANIM',ep:'52 eps'},
+{id:'t12',t:'Spider-Man: The New Animated Series',k:'T',d:'2003-04-06',m:286,u:'ANIM',ep:'13 eps'},
+{id:'t13',t:"Fantastic Four: World's Greatest Heroes",k:'T',d:'2006-09-02',m:572,u:'ANIM',ep:'26 eps'},
+{id:'t14',t:'The Spectacular Spider-Man',k:'T',d:'2008-03-08',m:572,u:'ANIM',ep:'26 eps'},
+{id:'t15',t:'Wolverine and the X-Men',k:'T',d:'2009-01-24',m:572,u:'ANIM',ep:'26 eps'},
+{id:'t16',t:'Iron Man: Armored Adventures',k:'T',d:'2009-04-08',m:1144,u:'ANIM',ep:'52 eps'},
+{id:'t17',t:"The Avengers: Earth's Mightiest Heroes",k:'T',d:'2010-08-07',m:1144,u:'ANIM',ep:'52 eps'},
+{id:'t18',t:'Ultimate Spider-Man',k:'T',d:'2012-04-01',m:2288,u:'ANIM',ep:'104 eps'},
+{id:'t19',t:'Avengers Assemble',k:'T',d:'2013-05-26',m:2662,u:'ANIM',ep:'121 eps'},
+{id:'t20',t:'Hulk and the Agents of S.M.A.S.H.',k:'T',d:'2013-08-11',m:1144,u:'ANIM',ep:'52 eps'},
+{id:'t21',t:'Guardians of the Galaxy',k:'T',d:'2015-09-26',m:1716,u:'ANIM',ep:'78 eps'},
+
+// ---- TV: Netflix / Defenders-verse ----
+{id:'t22',t:"Marvel's Daredevil",k:'T',d:'2015-04-10',m:2106,u:'NETFLIX',ep:'39 eps'},
+{id:'t23',t:"Marvel's Jessica Jones",k:'T',d:'2015-11-20',m:2145,u:'NETFLIX',ep:'39 eps'},
+{id:'t24',t:"Marvel's Luke Cage",k:'T',d:'2016-09-30',m:1430,u:'NETFLIX',ep:'26 eps'},
+{id:'t25',t:"Marvel's Iron Fist",k:'T',d:'2017-03-17',m:1219,u:'NETFLIX',ep:'23 eps'},
+{id:'t26',t:"Marvel's The Defenders",k:'T',d:'2017-08-18',m:400,u:'NETFLIX',ep:'8 eps'},
+{id:'t27',t:"Marvel's The Punisher",k:'T',d:'2017-11-17',m:1430,u:'NETFLIX',ep:'26 eps'},
+
+// ---- TV: other MCU-adjacent (Fox/FX/ABC/Hulu/Freeform) ----
+{id:'t28',t:"Marvel's Agent Carter",k:'T',d:'2015-01-06',m:774,u:'MCU',ep:'18 eps'},
+{id:'t29',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2013-09-24',m:5848,u:'MCU',ep:'136 eps'},
+{id:'t30',t:'Legion',k:'T',d:'2017-02-08',m:1296,u:'XMEN',ep:'27 eps'},
+{id:'t31',t:"Marvel's Cloak & Dagger",k:'T',d:'2018-06-07',m:817,u:'MCU',ep:'19 eps'},
+{id:'t32',t:'Inhumans',k:'T',d:'2017-09-01',m:344,u:'MCU',ep:'8 eps'},
+{id:'t33',t:"Marvel's Runaways",k:'T',d:'2017-11-21',m:1755,u:'MCU',ep:'39 eps'},
+{id:'t34',t:'The Gifted',k:'T',d:'2017-10-02',m:1247,u:'XMEN',ep:'29 eps'},
+{id:'t35',t:'Helstrom',k:'T',d:'2020-10-16',m:460,u:'MCU',ep:'10 eps'},
+
+// ---- TV: Disney+ MCU ----
+{id:'t36',t:'WandaVision',k:'T',d:'2021-01-15',m:315,u:'MCU',ep:'9 eps'},
+{id:'t37',t:'The Falcon and the Winter Soldier',k:'T',d:'2021-03-19',m:300,u:'MCU',ep:'6 eps'},
+{id:'t38',t:'Loki',k:'T',d:'2021-06-09',m:300,u:'MCU',ep:'S1 · 6 eps'},
+{id:'t39',t:'What If...?',k:'T',d:'2021-08-11',m:288,u:'MCU',ep:'S1 · 9 eps'},
+{id:'t40',t:'Hawkeye',k:'T',d:'2021-11-24',m:276,u:'MCU',ep:'6 eps'},
+{id:'t41',t:'Moon Knight',k:'T',d:'2022-03-30',m:282,u:'MCU',ep:'6 eps'},
+{id:'t42',t:'Ms. Marvel',k:'T',d:'2022-06-08',m:252,u:'MCU',ep:'6 eps'},
+{id:'t43',t:'Werewolf by Night',k:'T',d:'2022-10-07',m:53,u:'MCU',ep:'special'},
+{id:'t44',t:'She-Hulk: Attorney at Law',k:'T',d:'2022-08-18',m:315,u:'MCU',ep:'9 eps'},
+{id:'t45',t:'I Am Groot',k:'T',d:'2022-08-10',m:25,u:'MCU',ep:'S1 · 5 eps'},
+{id:'t46',t:'The Guardians of the Galaxy Holiday Special',k:'T',d:'2022-11-25',m:44,u:'MCU',ep:'special'},
+{id:'t47',t:'Secret Invasion',k:'T',d:'2023-06-21',m:270,u:'MCU',ep:'6 eps'},
+{id:'t48',t:'Loki',k:'T',d:'2023-10-05',m:300,u:'MCU',ep:'S2 · 6 eps'},
+{id:'t49',t:'I Am Groot',k:'T',d:'2023-08-31',m:30,u:'MCU',ep:'S2 · 6 eps'},
+{id:'t50',t:'What If...?',k:'T',d:'2023-12-22',m:288,u:'MCU',ep:'S2 · 9 eps'},
+{id:'t51',t:'Echo',k:'T',d:'2024-01-09',m:210,u:'MCU',ep:'5 eps'},
+{id:'t52',t:'X-Men \'97',k:'T',d:'2024-03-20',m:300,u:'ANIM',ep:'S1 · 10 eps'},
+{id:'t53',t:'Agatha All Along',k:'T',d:'2024-09-18',m:378,u:'MCU',ep:'9 eps'},
+{id:'t54',t:'What If...?',k:'T',d:'2024-12-22',m:320,u:'MCU',ep:'S3 · 10 eps'},
+{id:'t55',t:'Your Friendly Neighborhood Spider-Man',k:'T',d:'2025-01-29',m:250,u:'MCU',ep:'S1 · 10 eps'},
+{id:'t56',t:'Daredevil: Born Again',k:'T',d:'2025-03-04',m:450,u:'MCU',ep:'S1 · 9 eps'},
+{id:'t57',t:'Ironheart',k:'T',d:'2025-06-24',m:252,u:'MCU',ep:'6 eps'},
+{id:'t58',t:'Eyes of Wakanda',k:'T',d:'2025-08-06',m:88,u:'MCU',ep:'4 eps'},
+{id:'t59',t:'Marvel Zombies',k:'T',d:'2025-10-03',m:152,u:'MCU',ep:'4 eps'},
+{id:'t60',t:'Wonder Man',k:'T',d:'2026-01-27',m:336,u:'MCU',ep:'8 eps'},
+{id:'t61',t:'Daredevil: Born Again',k:'T',d:'2026-03-24',m:400,u:'MCU',ep:'S2 · 8 eps'},
+{id:'t62',t:'X-Men \'97',k:'T',d:'2026-07-01',m:300,u:'ANIM',ep:'S2 · 10 eps'},
+{id:'t63',t:'VisionQuest',k:'T',d:'2026-10-14',m:336,u:'MCU',ep:'8 eps'},
+{id:'t64',t:'The Punisher: One Last Kill',k:'T',d:'2026-11-20',m:55,u:'MCU',ep:'special',tba:true},
+{id:'t65',t:'Your Friendly Neighborhood Spider-Man',k:'T',d:'2026-11-15',m:250,u:'MCU',ep:'S2 · 10 eps',tba:true},
+];
+
+DATA.sort((a,b)=> a.d.localeCompare(b.d));
+const DATA_BY_ID = {};
+DATA.forEach(d=> DATA_BY_ID[d.id]=d);
+
+/* ---------------- STATE ---------------- */
+let status = {}; // { id: 'watched'|'skipped', 'id-eN': 'watched'|'skipped' }
+let filter = 'all';
+let expanded = new Set(); // ids of TV cards currently showing their episode list
+const today = new Date();
+
+const uColor = {MCU:'var(--u-mcu)',XMEN:'var(--u-xmen)',SPIDER:'var(--u-spider)',NETFLIX:'var(--u-netflix)',ANIM:'var(--u-anim)',OTHER:'var(--u-other)'};
+const uLabel = {MCU:'MCU',XMEN:'X-Men',SPIDER:'Spider-Verse',NETFLIX:'Netflix',ANIM:'Animated',OTHER:'Other'};
+const kIcon = {F:'\u{1F3AC}',T:'\u{1F4FA}',S:'\u{1F39E}\uFE0F'};
+const kLabel = {F:'Film',T:'TV',S:'Short'};
+
+function fmtDate(d){
+  const dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtRuntime(m){
+  if(m<60) return m+'m';
+  const h=Math.floor(m/60), r=m%60;
+  return r? (h+'h '+r+'m') : (h+'h');
+}
+
+/* ---------------- EPISODES / SEASONS ---------------- */
+function episodeCount(item){
+  if(!item.ep) return 0;
+  if(item.ep==='special') return 1;
+  const m = item.ep.match(/(\d+)\s*eps/);
+  return m ? parseInt(m[1],10) : 0;
+}
+function seasonLabel(item){
+  const m = item.ep && item.ep.match(/^S(\d+)/);
+  return m ? 'Season '+m[1] : null;
+}
+function displayTitle(item){
+  const s = seasonLabel(item);
+  return s ? item.t+' — '+s : item.t;
+}
+function epKey(item, n){ return item.id+'-e'+n; }
+function doneEpisodeCount(item){
+  const n = episodeCount(item);
+  let c=0;
+  for(let i=1;i<=n;i++){ if(status[epKey(item,i)]) c++; }
+  return c;
+}
+function isItemDone(item){
+  if(status[item.id]) return true;
+  if(item.k==='T'){
+    const n = episodeCount(item);
+    if(n>0) return doneEpisodeCount(item)===n;
+  }
+  return false;
+}
+function pendingMinutesFor(item){
+  if(isItemDone(item)) return 0;
+  if(item.k==='T'){
+    const n = episodeCount(item);
+    if(n>0){
+      const perEp = item.m/n;
+      return Math.round(perEp*(n-doneEpisodeCount(item)));
+    }
+  }
+  return item.m;
+}
+function episodeRowHtml(item, num, label){
+  const key = epKey(item,num);
+  const st = status[key];
+  const done = st==='watched'||st==='skipped';
+  return `<div class="episode-row ${done?'done':''}">
+    <span class="ep-name">${label}</span>
+    <div class="ep-actions">
+      <button class="watch ${st==='watched'?'active':''}" data-id="${item.id}" data-ep="${num}" data-action="watched" title="Mark watched">\u2713</button>
+      <button class="skip ${st==='skipped'?'active':''}" data-id="${item.id}" data-ep="${num}" data-action="skipped" title="Mark skipped">\u2715</button>
+    </div>
+  </div>`;
+}
+function episodeRowsHtml(item){
+  if(item.ep==='special') return episodeRowHtml(item,1,'Special');
+  const n = episodeCount(item);
+  let rows='';
+  for(let i=1;i<=n;i++) rows += episodeRowHtml(item,i,'Episode '+i);
+  return rows;
+}
+
+/* ---------------- STORAGE ---------------- */
+/* Uses the Claude artifact key-value store when available (persists via
+   Anthropic's backend across sessions); falls back to localStorage so the
+   file also keeps progress when saved and opened directly in a browser. */
+async function loadStatus(){
+  try{
+    if(window.storage && window.storage.get){
+      const res = await window.storage.get('marvel-watchlist-status', false);
+      return res && res.value ? JSON.parse(res.value) : {};
+    }
+  }catch(e){ /* not available here — fall through */ }
+  try{
+    const raw = localStorage.getItem('marvel-watchlist-status');
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+async function saveStatus(){
+  try{
+    if(window.storage && window.storage.set){
+      await window.storage.set('marvel-watchlist-status', JSON.stringify(status), false);
+      return;
+    }
+  }catch(e){ /* not available here — fall through */ }
+  try{ localStorage.setItem('marvel-watchlist-status', JSON.stringify(status)); }
+  catch(e){ console.error('Storage save failed', e); }
+}
+
+/* ---------------- FILTER / CALC ---------------- */
+function filteredData(){
+  return DATA.filter(item=>{
+    if(filter==='unwatched') return !isItemDone(item);
+    if(filter==='film') return item.k==='F';
+    if(filter==='tv') return item.k==='T';
+    if(filter==='short') return item.k==='S';
+    return true;
+  });
+}
+function scopeLabel(){
+  const list = filteredData();
+  const n = list.length;
+  if(filter==='all') return 'across all '+n+' titles';
+  if(filter==='unwatched') return 'across '+n+' unwatched titles';
+  if(filter==='film') return 'across '+n+' films';
+  if(filter==='tv') return 'across '+n+' TV series';
+  if(filter==='short') return 'across '+n+' shorts';
+}
+
+/* ---------------- RENDER ---------------- */
+function render(){
+  const list = filteredData();
+  const listEl = document.getElementById('list');
+
+  if(list.length===0){
+    listEl.innerHTML = '<div class="empty">Nothing here — try a different filter.</div>';
+  } else {
+    let html='';
+    let lastYear=null;
+    list.forEach(item=>{
+      const year = item.d.slice(0,4);
+      if(year!==lastYear){
+        html += `<div class="year-divider"><span class="y">${year}</span><span class="r"></span></div>`;
+        lastYear = year;
+      }
+      const st = status[item.id];
+      const isDone = isItemDone(item);
+      const dt = new Date(item.d+'T00:00:00');
+      const upcoming = dt > today;
+      const epCount = episodeCount(item);
+      const isExpandable = item.k==='T' && !upcoming && epCount>0;
+      const isExpanded = isExpandable && expanded.has(item.id);
+
+      const titleRow = isExpandable
+        ? `<div class="card-title-row" data-expand-toggle="${item.id}">
+             <span class="card-title">${displayTitle(item)}</span>
+             <span class="chevron">▾</span>
+           </div>`
+        : `<div class="card-title-row"><span class="card-title">${displayTitle(item)}</span></div>`;
+
+      const epProgress = isExpandable ? `<span>·</span><span class="ep-progress">${doneEpisodeCount(item)}/${epCount} eps</span>` : '';
+
+      html += `<div class="item-block">
+        <div class="card ${isDone?'done':''} ${isExpandable?'tv':''} ${isExpanded?'expanded':''}">
+          <div class="stripe" style="background:${uColor[item.u]}"></div>
+          <div class="card-body">
+            ${titleRow}
+            <div class="card-meta">
+              <span class="kind-icon">${kIcon[item.k]}</span>
+              <span>${kLabel[item.k]}</span>
+              <span>·</span>
+              <span>${fmtDate(item.d)}</span>
+              <span>·</span>
+              <span>${item.ep ? item.ep+' · ' : ''}${fmtRuntime(item.m)}</span>
+              ${epProgress}
+              <span class="tag" style="background:${uColor[item.u]}">${uLabel[item.u]}</span>
+            </div>
+          </div>
+          ${upcoming
+            ? `<div class="upcoming-badge">${item.tba? 'Coming&nbsp;'+dt.toLocaleDateString('en-US',{month:'short',year:'numeric'}) : 'Coming&nbsp;'+dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`
+            : `<div class="card-actions">
+                <button class="watch ${st==='watched'?'active':''}" data-id="${item.id}" data-action="watched" title="Mark watched">\u2713</button>
+                <button class="skip ${st==='skipped'?'active':''}" data-id="${item.id}" data-action="skipped" title="Mark skipped">\u2715</button>
+              </div>`
+          }
+        </div>
+        ${isExpanded ? `<div class="episode-panel">${episodeRowsHtml(item)}</div>` : ''}
+      </div>`;
+    });
+    listEl.innerHTML = html;
+  }
+
+  // header stats (respect current filter)
+  const pendingMinutes = list.reduce((sum,i)=>sum+pendingMinutesFor(i),0);
+  const hours = pendingMinutes/60;
+  document.getElementById('hoursNum').innerHTML = (hours>=100? Math.round(hours) : hours.toFixed(1)) + '<small>h</small>';
+  document.getElementById('hoursScope').textContent = scopeLabel();
+
+  // overall progress (always full dataset)
+  const totalDone = DATA.filter(i=>isItemDone(i)).length;
+  const pct = Math.round((totalDone/DATA.length)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = totalDone+' / '+DATA.length+' done';
+}
+
+/* ---------------- EVENTS ---------------- */
+document.getElementById('list').addEventListener('click', async (e)=>{
+  // episode-level watched/skip button
+  const epBtn = e.target.closest('button[data-ep]');
+  if(epBtn){
+    const key = epBtn.dataset.id+'-e'+epBtn.dataset.ep;
+    const action = epBtn.dataset.action;
+    if(status[key] === action){ delete status[key]; }
+    else{ status[key] = action; }
+    render();
+    await saveStatus();
+    return;
+  }
+
+  // expand/collapse a TV series' episode list
+  const toggle = e.target.closest('[data-expand-toggle]');
+  if(toggle){
+    const id = toggle.dataset.expandToggle;
+    if(expanded.has(id)) expanded.delete(id); else expanded.add(id);
+    render();
+    return;
+  }
+
+  // series/film/short-level watched/skip button
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const item = DATA_BY_ID[id];
+  if(status[id] === action){
+    delete status[id]; // toggle off
+    if(item && item.k==='T'){
+      const n = episodeCount(item);
+      for(let i=1;i<=n;i++) delete status[epKey(item,i)];
+    }
+  } else {
+    status[id] = action;
+    if(item && item.k==='T'){
+      const n = episodeCount(item);
+      for(let i=1;i<=n;i++) status[epKey(item,i)] = action;
+    }
+  }
+  render();
+  await saveStatus();
+});
+
+document.querySelectorAll('.pill[data-filter]').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    document.querySelectorAll('.pill[data-filter]').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    filter = p.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(confirm('Clear all watched/skipped progress? This cannot be undone.')){
+    status = {};
+    render();
+    await saveStatus();
+  }
+});
+
+/* ---------------- INIT ---------------- */
+(async function init(){
+  status = await loadStatus();
+  render();
+})();
+</script>
+</body>
+</html>
