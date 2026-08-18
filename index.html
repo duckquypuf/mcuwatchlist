@@ -147,21 +147,24 @@
   .sort-toggle button:hover:not(.active) { background:var(--ink-600); color:var(--text); }
 
   /* ---------- FILTERS ---------- */
-  .filters{
-    display:flex; flex-wrap:wrap; gap:8px;
-    margin-top:12px;
+  .filters-primary{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  .filters-secondary{
+    display:flex; flex-wrap:wrap; align-items:center; gap:7px;
+    margin-top:9px;
+    padding-top:9px;
+    border-top:1px dashed var(--ink-600);
   }
   .pill{
     font-family:'Barlow Condensed', sans-serif;
     font-weight:700;
-    font-size:13px;
-    letter-spacing:0.8px;
     text-transform:uppercase;
     background:transparent;
     color:var(--text-dim);
     border:2px solid var(--ink-600);
-    border-radius:20px;
-    padding:5px 12px;
     cursor:pointer;
     transition:all .15s ease;
   }
@@ -171,6 +174,25 @@
     border-color:var(--marvel-red);
     color:#fff;
     box-shadow:2px 2px 0 rgba(0,0,0,0.5);
+  }
+  .pill.primary{
+    flex:1;
+    font-size:15px;
+    letter-spacing:0.4px;
+    padding:11px 6px;
+    border-radius:10px;
+    border-width:2.5px;
+    text-align:center;
+  }
+  .pill.primary.active{
+    box-shadow:3px 3px 0 rgba(0,0,0,0.55);
+  }
+  .pill.secondary{
+    font-size:12.5px;
+    letter-spacing:0.6px;
+    padding:5px 12px;
+    border-radius:16px;
+    border-width:1.5px;
   }
   .reset-link{
     margin-left:auto;
@@ -357,6 +379,7 @@
     .card-title{font-size:17px;}
     .badge{min-width:100px; padding:6px 12px 8px;}
     .badge .num{font-size:28px;}
+    .pill.primary{font-size:12.5px; padding:9px 4px; letter-spacing:0.2px;}
   }
 </style>
 </head>
@@ -389,15 +412,19 @@
       </div>
     </div>
 
-    <div class="filters">
-      <button class="pill active" data-filter="all">Entire Marvel</button>
-      <button class="pill" data-filter="mcu">MCU</button>
-      <button class="pill" data-filter="doomsday">Doomsday</button>
-      <button class="pill" data-filter="essentials">Just the Essentials</button>
-      <button class="pill" data-filter="unwatched">Unwatched</button>
-      <button class="pill" data-filter="film">Films</button>
-      <button class="pill" data-filter="tv">TV</button>
-      <button class="pill" data-filter="short">Shorts</button>
+    <div class="filters-primary">
+      <button class="pill primary active" data-primary="all">Entire Marvel</button>
+      <button class="pill primary" data-primary="mcu">MCU</button>
+      <button class="pill primary" data-primary="doomsday">Doomsday</button>
+      <button class="pill primary" data-primary="essentials">Essentials</button>
+    </div>
+
+    <div class="filters-secondary">
+      <button class="pill secondary active" data-secondary="all">All</button>
+      <button class="pill secondary" data-secondary="unwatched">Unwatched</button>
+      <button class="pill secondary" data-secondary="film">Films</button>
+      <button class="pill secondary" data-secondary="tv">TV</button>
+      <button class="pill secondary" data-secondary="short">Shorts</button>
       <button class="reset-link" id="resetBtn">clear progress</button>
     </div>
 
@@ -595,7 +622,8 @@ DATA.forEach(d=> DATA_BY_ID[d.id]=d);
 
 /* ---------------- STATE ---------------- */
 let status = {}; 
-let filter = 'all';
+let primaryFilter = 'all';
+let secondaryFilter = 'all';
 let sortOrder = 'release';
 let expanded = new Set();
 const today = new Date();
@@ -701,17 +729,22 @@ async function saveStatus(){
 }
 
 /* ---------------- FILTER / CALC ---------------- */
+function matchesPrimary(item){
+  if(primaryFilter==='mcu') return item.u==='MCU';
+  if(primaryFilter==='doomsday') return !!item.doom;
+  if(primaryFilter==='essentials') return !!item.ess;
+  return true; // 'all'
+}
+function matchesSecondary(item){
+  if(secondaryFilter==='unwatched') return !isItemDone(item);
+  if(secondaryFilter==='film') return item.k==='F';
+  if(secondaryFilter==='tv') return item.k==='T';
+  if(secondaryFilter==='short') return item.k==='S';
+  return true; // 'all'
+}
+
 function filteredData(){
-  let list = DATA.filter(item=>{
-    if(filter==='mcu') return item.u==='MCU';
-    if(filter==='doomsday') return !!item.doom;
-    if(filter==='essentials') return !!item.ess;
-    if(filter==='unwatched') return !isItemDone(item);
-    if(filter==='film') return item.k==='F';
-    if(filter==='tv') return item.k==='T';
-    if(filter==='short') return item.k==='S';
-    return true;
-  });
+  let list = DATA.filter(item=> matchesPrimary(item) && matchesSecondary(item));
 
   list.sort((a,b) => {
     const dateA = (sortOrder === 'story' && a.c) ? a.c : a.d;
@@ -722,17 +755,16 @@ function filteredData(){
   return list;
 }
 
+const primaryScopeLabel = {all:'Entire Marvel', mcu:'MCU', doomsday:'Doomsday prep', essentials:'Essentials'};
+const secondaryScopeLabel = {all:null, unwatched:'unwatched', film:'films', tv:'TV', short:'shorts'};
+
 function scopeLabel(){
-  const list = filteredData();
-  const n = list.length;
-  if(filter==='all') return 'across all '+n+' titles';
-  if(filter==='mcu') return 'across '+n+' MCU titles';
-  if(filter==='doomsday') return 'across '+n+' Doomsday prep titles';
-  if(filter==='essentials') return 'across '+n+' essential storyline titles';
-  if(filter==='unwatched') return 'across '+n+' unwatched titles';
-  if(filter==='film') return 'across '+n+' films';
-  if(filter==='tv') return 'across '+n+' TV series';
-  if(filter==='short') return 'across '+n+' shorts';
+  const n = filteredData().length;
+  const secondBit = secondaryScopeLabel[secondaryFilter];
+  const base = primaryScopeLabel[primaryFilter];
+  return secondBit
+    ? 'across '+n+' '+secondBit+' · '+base
+    : 'across '+n+' '+base.toLowerCase()+' titles';
 }
 
 /* ---------------- RENDER ---------------- */
@@ -855,11 +887,20 @@ document.getElementById('list').addEventListener('click', async (e)=>{
   await saveStatus();
 });
 
-document.querySelectorAll('.pill[data-filter]').forEach(p=>{
+document.querySelectorAll('.pill[data-primary]').forEach(p=>{
   p.addEventListener('click', ()=>{
-    document.querySelectorAll('.pill[data-filter]').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.pill[data-primary]').forEach(x=>x.classList.remove('active'));
     p.classList.add('active');
-    filter = p.dataset.filter;
+    primaryFilter = p.dataset.primary;
+    render();
+  });
+});
+
+document.querySelectorAll('.pill[data-secondary]').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    document.querySelectorAll('.pill[data-secondary]').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    secondaryFilter = p.dataset.secondary;
     render();
   });
 });
