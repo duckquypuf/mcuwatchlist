@@ -449,6 +449,8 @@
 <script>
 /* ---------------- DATA ---------------- */
 /* k: F=Film, T=TV, S=Short  |  u: universe tag | c: chronological date override | doom: Doomsday essential | ess: Main MCU storyline */
+/* ---------------- DATA ---------------- */
+/* k: F=Film, T=TV, S=Short  |  u: universe tag | c: chronological date override | doom: Doomsday essential | ess: Main MCU storyline */
 const DATA = [
 // ---- FILMS ----
 {id:'f01',t:'Howard the Duck',k:'F',d:'1986-08-01',m:111,u:'OTHER'},
@@ -548,7 +550,11 @@ const DATA = [
 {id:'t02',t:'Spider-Man',k:'T',d:'1967-09-09',m:1144,u:'ANIM',ep:'52 eps'},
 {id:'t03',t:'Fantastic Four',k:'T',d:'1967-09-09',m:440,u:'ANIM',ep:'20 eps'},
 {id:'t04',t:'Spider-Man and His Amazing Friends',k:'T',d:'1981-09-12',m:528,u:'ANIM',ep:'24 eps'},
-{id:'t05',t:'X-Men: The Animated Series',k:'T',d:'1992-10-31',m:1672,u:'ANIM',ep:'76 eps'},
+{id:'t05a',t:'X-Men: The Animated Series',k:'T',d:'1992-10-31',m:286,u:'ANIM',ep:'S1 · 13 eps'},
+{id:'t05b',t:'X-Men: The Animated Series',k:'T',d:'1993-10-23',m:286,u:'ANIM',ep:'S2 · 13 eps'},
+{id:'t05c',t:'X-Men: The Animated Series',k:'T',d:'1994-07-29',m:418,u:'ANIM',ep:'S3 · 19 eps'},
+{id:'t05d',t:'X-Men: The Animated Series',k:'T',d:'1995-09-09',m:462,u:'ANIM',ep:'S4 · 21 eps'},
+{id:'t05e',t:'X-Men: The Animated Series',k:'T',d:'1996-09-07',m:220,u:'ANIM',ep:'S5 · 10 eps'},
 {id:'t06',t:'Fantastic Four',k:'T',d:'1994-09-24',m:572,u:'ANIM',ep:'26 eps'},
 {id:'t07',t:'Spider-Man: The Animated Series',k:'T',d:'1994-11-19',m:1430,u:'ANIM',ep:'65 eps'},
 {id:'t08',t:'Silver Surfer',k:'T',d:'1998-02-07',m:286,u:'ANIM',ep:'13 eps'},
@@ -575,8 +581,15 @@ const DATA = [
 {id:'t27',t:"Marvel's The Punisher",k:'T',d:'2017-11-17',m:1430,u:'NETFLIX',ep:'26 eps'},
 
 // ---- TV: other MCU-adjacent ----
-{id:'t28',t:"Marvel's Agent Carter",k:'T',d:'2015-01-06',m:774,u:'MCU',ep:'18 eps',c:'1946-01-01'},
-{id:'t29',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2013-09-24',m:5848,u:'MCU',ep:'136 eps'},
+{id:'t28a',t:"Marvel's Agent Carter",k:'T',d:'2015-01-06',m:344,u:'MCU',ep:'S1 · 8 eps',c:'1946-01-01'},
+{id:'t28b',t:"Marvel's Agent Carter",k:'T',d:'2016-01-19',m:430,u:'MCU',ep:'S2 · 10 eps',c:'1947-01-01'},
+{id:'t29a',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2013-09-24',m:946,u:'MCU',ep:'S1 · 22 eps'},
+{id:'t29b',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2014-09-23',m:946,u:'MCU',ep:'S2 · 22 eps'},
+{id:'t29c',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2015-09-29',m:946,u:'MCU',ep:'S3 · 22 eps'},
+{id:'t29d',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2016-09-20',m:946,u:'MCU',ep:'S4 · 22 eps'},
+{id:'t29e',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2017-12-01',m:946,u:'MCU',ep:'S5 · 22 eps'},
+{id:'t29f',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2019-05-10',m:559,u:'MCU',ep:'S6 · 13 eps'},
+{id:'t29g',t:"Marvel's Agents of S.H.I.E.L.D.",k:'T',d:'2020-05-27',m:559,u:'MCU',ep:'S7 · 13 eps'},
 {id:'t30',t:'Legion',k:'T',d:'2017-02-08',m:1296,u:'XMEN',ep:'27 eps'},
 {id:'t31',t:"Marvel's Cloak & Dagger",k:'T',d:'2018-06-07',m:817,u:'MCU',ep:'19 eps'},
 {id:'t32',t:'Inhumans',k:'T',d:'2017-09-01',m:344,u:'MCU',ep:'8 eps'},
